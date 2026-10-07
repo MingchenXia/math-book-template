@@ -8,7 +8,7 @@
 
 Is every continuous function $f\colon X\to\mathbb{R}$ bounded?
 
-[解答](../research/solutions/OP-001/solution.tex) · 审校指纹：`0018490cbdb0c0bd82708910157aeafd197eca6aca99e13dde517c74a3e163a1`
+[解答](../research/solutions/OP-001/solution.tex) · 审校指纹：`934c09df3254cab09007753ac30460e0c0f93f03e764251ae56b3e8197dd0d72`
 
 ## OP-002 — Existence of extrema
 
