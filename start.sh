@@ -13,7 +13,7 @@ if [ "$native" = 1 ]; then
   make build
 elif command -v docker >/dev/null 2>&1; then
   docker build -t math-book-template-env .devcontainer
-  docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/book-home -v "$PWD:/workspace" -w /workspace math-book-template-env bash -c 'mkdir -p "$HOME"; bash scripts/setup.sh; make build'
+  docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/book-home -v "$PWD:/workspace" -w /workspace math-book-template-env bash -c 'set -euo pipefail; mkdir -p "$HOME"; bash scripts/setup.sh; make build'
 else
   echo 'Open this repository in GitHub Codespaces, or install Docker and run bash start.sh again.' >&2
   exit 1

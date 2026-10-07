@@ -32,12 +32,12 @@ jobs:
       - name: Review candidates in fresh read-only sessions
         if: env.OPENAI_API_KEY != ''
         run: |
-          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/book-home -e OPENAI_API_KEY -v "$PWD:/workspace" -w /workspace book-env bash -c 'mkdir -p "$HOME"; printenv OPENAI_API_KEY | codex login --with-api-key; python3 scripts/review_candidates.py; make sync'
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/book-home -e OPENAI_API_KEY -v "$PWD:/workspace" -w /workspace book-env bash -c 'set -euo pipefail; mkdir -p "$HOME"; printenv OPENAI_API_KEY | codex login --with-api-key; python3 scripts/review_candidates.py; make sync'
       - name: Review the complete short book
         if: env.OPENAI_API_KEY != ''
         continue-on-error: true
         run: |
-          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/book-home -e OPENAI_API_KEY -v "$PWD:/workspace" -w /workspace book-env bash -c 'mkdir -p "$HOME"; printenv OPENAI_API_KEY | codex login --with-api-key; make review'
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/book-home -e OPENAI_API_KEY -v "$PWD:/workspace" -w /workspace book-env bash -c 'set -euo pipefail; mkdir -p "$HOME"; printenv OPENAI_API_KEY | codex login --with-api-key; make review'
       - name: Explain unconfigured AI review
         if: env.OPENAI_API_KEY == ''
         run: echo 'Catalogue synchronization is enabled. AI review is skipped until OPENAI_API_KEY is configured; local agents also work with codex login.'
