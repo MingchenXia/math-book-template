@@ -1,0 +1,55 @@
+name: Book maintenance
+on:
+  push:
+    paths:
+      - 'book/**'
+      - 'bookflow.json'
+      - 'research/solutions/**'
+      - 'research/reviews/**'
+      - 'references/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: book-maintenance
+  cancel-in-progress: false
+jobs:
+  maintain:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build environment
+        run: docker build -t book-env .devcontainer
+      - name: Synchronize the catalogue
+        run: docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/workspace" -w /workspace book-env python3 scripts/bookflow.py sync
+      - name: Review candidates in fresh read-only sessions
+        if: env.OPENAI_API_KEY != ''
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/book-home -e OPENAI_API_KEY -v "$PWD:/workspace" -w /workspace book-env bash -c 'mkdir -p "$HOME"; printenv OPENAI_API_KEY | codex login --with-api-key; python3 scripts/review_candidates.py; make sync'
+      - name: Review the complete short book
+        if: env.OPENAI_API_KEY != ''
+        continue-on-error: true
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/book-home -e OPENAI_API_KEY -v "$PWD:/workspace" -w /workspace book-env bash -c 'mkdir -p "$HOME"; printenv OPENAI_API_KEY | codex login --with-api-key; make review'
+      - name: Explain unconfigured AI review
+        if: env.OPENAI_API_KEY == ''
+        run: echo 'Catalogue synchronization is enabled. AI review is skipped until OPENAI_API_KEY is configured; local agents also work with codex login.'
+      - name: Propose catalogue and review records
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: automation/book-maintenance
+          title: 'Update book review records and problem catalogue'
+          commit-message: 'Update problem catalogue and scoped review reports'
+          body: 'Generated problem catalogue and independent agent review records. Full solutions become eligible only when their current fingerprint is approved. Review the reports and rerun Book checks before merging. In revision phase mathematical changes still require a revision proposal and author-approved PDF.'
+          add-paths: |
+            research/open-problems.md
+            research/open-problems.json
+            research/reviews/*.json
+          delete-branch: true

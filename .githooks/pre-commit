@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+python3 scripts/bookflow.py guard
+python3 scripts/bookflow.py sync
+python3 scripts/bookflow.py audit
+git add research/open-problems.json research/open-problems.md
+# Refuse partial manuscript commits: the index must describe the committed input.
+if ! git diff --quiet -- book bookflow.json references/references.bib research/solutions research/reviews; then
+  echo 'Stage the complete coherent manuscript/review change before committing, so its problem catalogue matches the index.' >&2
+  exit 1
+fi

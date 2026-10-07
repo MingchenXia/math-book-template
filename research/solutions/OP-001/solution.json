@@ -1,0 +1,8 @@
+{
+  "problem_id": "OP-001",
+  "scope": "full",
+  "tex_file": "solution.tex",
+  "dependencies": ["def:compactness"],
+  "references": [],
+  "note": "Demonstration candidate. A separate review must approve this exact proof before integration."
+}

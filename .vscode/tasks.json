@@ -1,0 +1,9 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {"label": "Book: build PDF", "type": "shell", "command": "make build", "group": {"kind": "build", "isDefault": true}, "problemMatcher": []},
+    {"label": "Book: synchronize problems", "type": "shell", "command": "make sync", "problemMatcher": []},
+    {"label": "Book: independent review", "type": "shell", "command": "make review", "problemMatcher": []},
+    {"label": "Book: edit next unit", "type": "shell", "command": "make edit", "problemMatcher": []}
+  ]
+}

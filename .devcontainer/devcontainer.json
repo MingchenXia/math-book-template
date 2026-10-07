@@ -1,0 +1,13 @@
+{
+  "name": "Mathematical book studio",
+  "build": {"dockerfile": "Dockerfile"},
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+  "postCreateCommand": "bash scripts/setup.sh && make build",
+  "customizations": {
+    "vscode": {
+      "extensions": ["James-Yu.latex-workshop", "ms-python.python", "openai.chatgpt"],
+      "settings": {"latex-workshop.latex.autoBuild.run": "never"}
+    }
+  }
+}

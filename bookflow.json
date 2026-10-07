@@ -1,0 +1,11 @@
+{
+  "title": "A Mathematical Book",
+  "author": "Your Name",
+  "phase": "draft",
+  "root_tex": "book/main.tex",
+  "bibliography": "references/references.bib",
+  "bibliography_backend": "bibtex",
+  "engine": "pdflatex",
+  "main_branch": "main",
+  "baseline_solutions": []
+}

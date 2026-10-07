@@ -1,0 +1,31 @@
+name: Book checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: book-checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the same environment used by Codespaces
+        run: docker build -t book-env .devcontainer
+      - name: Verify state transitions, catalogue and PDF
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/book-home -v "$PWD:/workspace" -w /workspace book-env bash -c 'mkdir -p "$HOME"; make test; make sync; make check; make build'
+      - name: Preserve the exact source and PDF fingerprints
+        uses: actions/upload-artifact@v4
+        with:
+          name: book-${{ github.sha }}
+          path: |
+            build/pdf/main.pdf
+            build/build-manifest.json
+            research/open-problems.md
+            research/open-problems.json
+          if-no-files-found: error

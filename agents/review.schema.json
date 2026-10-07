@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {"type": "string", "enum": ["book", "chapter", "solution"]},
+    "unit": {"type": ["string", "null"]},
+    "problem_id": {"type": ["string", "null"]},
+    "source_sha256": {"type": "string"},
+    "reviewer": {"type": "string"},
+    "verdict": {"type": "string", "enum": ["approved", "needs_work", "rejected"]},
+    "coverage": {"type": "array", "items": {"type": "string", "enum": ["statement", "proof", "dependencies", "sources", "second_pass"]}},
+    "summary": {"type": "string"},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "severity": {"type": "string", "enum": ["blocking", "major", "minor"]},
+          "file": {"type": "string"},
+          "line": {"type": "integer"},
+          "message": {"type": "string"},
+          "suggestion": {"type": "string"}
+        },
+        "required": ["severity", "file", "line", "message", "suggestion"]
+      }
+    }
+  },
+  "required": ["kind", "unit", "problem_id", "source_sha256", "reviewer", "verdict", "coverage", "summary", "findings"]
+}
