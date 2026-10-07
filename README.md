@@ -64,9 +64,9 @@ make review
 
 每次 push/PR 自动测试工作流、构建同一容器环境并编译 PDF，在 Actions 的 `book-<commit>` artifact 中保留 PDF、源文件指纹和问题清单。
 
-`Book maintenance` 在默认分支的书稿/解答改动后自动更新问题目录，并提议 PR。若为仓库配置 Actions secret **OPENAI_API_KEY**，它还会分别审校新解答和整书；没有 secret 时明确跳过 AI，仍执行目录同步。AI API 使用需要你自己的可用账号。开启 **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests** 才能让 maintenance 创建 PR；本模板不会批准或自动合并这些 PR。
+`Book maintenance` 在默认分支的书稿/解答改动后自动更新问题目录，将结果保留为 Actions artifact。若为仓库配置 Actions secret **OPENAI_API_KEY**，它还会分别审校新解答和短书；没有 secret 时明确跳过 AI，仍执行目录同步。AI API 使用需要你自己的可用账号。需要自动提出维护 PR 时，另行设置仓库 variable **ENABLE_MAINTENANCE_PRS=true**，并自行启用 GitHub Actions 创建 PR 的仓库权限；此选项默认关闭，本模板不会批准或自动合并 PR。
 
-由默认 `GITHUB_TOKEN` 创建的 PR 通常不会自动触发新工作流。请在合并维护 PR 前，手动运行 `Book checks` 并选择 `automation/book-maintenance` 分支，检查相同版本的 PDF。没有变化时不会创建 PR。没有预设 cron，也不会将书稿部署到个人主页。
+启用 PR 选项后，由默认 `GITHUB_TOKEN` 创建的 PR 通常不会自动触发新工作流。请在合并维护 PR 前，手动运行 `Book checks` 并选择 `automation/book-maintenance` 分支，检查相同版本的 PDF。没有变化时不会创建 PR。没有预设 cron，也不会将书稿部署到个人主页。
 
 ## 成稿后的改书
 

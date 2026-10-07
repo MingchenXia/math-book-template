@@ -24,4 +24,4 @@
 
 完整解答在原问题的读者位置生成标准 proposition/theorem 及 proof，并保留 `prob:ID` 引用别名。该位置必须已经具备其所有证明依赖；审校 agent 必须检查这个阅读顺序。适合放到另一章的结果应由编辑 agent 在授权范围内重构章节、保留 ID、修复引用，再次审校。宏替换不自动修改其他章节的“此问题仍开放”等句子，这些全书调用检查属于编辑职责。
 
-`make sync`、编译、提交 hook、默认分支 maintenance 构成自动同步入口；`make watch` 可显式开启本地即时同步。GitHub 自动审校只读来源，在 PR 中提议审校记录；自动化不会合并数学修改、重写作者内容或发布网站。完成书后 `make finish` 固定基线并切换 revision；新增的核实解答先处于 pending，只能在提案分支进入书稿。
+`make sync`、编译、提交 hook、默认分支 maintenance 构成自动同步入口；`make watch` 可显式开启本地即时同步。GitHub 自动审校只读来源，默认上传报告 artifact；只有使用者显式启用 PR 选项和对应权限后才提出维护 PR。自动化不会合并数学修改、重写作者内容或发布网站。完成书后 `make finish` 固定基线并切换 revision；新增的核实解答先处于 pending，只能在提案分支进入书稿。

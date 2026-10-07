@@ -42,6 +42,7 @@ jobs:
         if: env.OPENAI_API_KEY == ''
         run: echo 'Catalogue synchronization is enabled. AI review is skipped until OPENAI_API_KEY is configured; local agents also work with codex login.'
       - name: Propose catalogue and review records
+        if: vars.ENABLE_MAINTENANCE_PRS == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           branch: automation/book-maintenance
@@ -53,3 +54,15 @@ jobs:
             research/open-problems.json
             research/reviews/*.json
           delete-branch: true
+      - name: Preserve maintenance results with default repository permissions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maintenance-${{ github.sha }}
+          path: |
+            research/open-problems.md
+            research/open-problems.json
+            research/reviews/*.json
+            build/pdf/main.pdf
+            build/build-manifest.json
+          if-no-files-found: warn
