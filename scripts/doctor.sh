@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
+cd "$(dirname "$0")/.."
 missing=0
 backend=$(python3 -c 'import json; print(json.load(open("bookflow.json"))["bibliography_backend"])')
-for tool in python3 git make latexmk pdflatex "$backend" makeindex pdfinfo pdftotext pdfseparate pdfunite; do
+texengine=$(python3 -c 'import json; print(json.load(open("bookflow.json"))["engine"])')
+for tool in python3 git make latexmk "$texengine" "$backend" makeindex pdfinfo pdftotext pdftoppm pdfseparate pdfunite; do
   if ! command -v "$tool" >/dev/null 2>&1; then
     echo "Missing dependency: $tool" >&2
     missing=1

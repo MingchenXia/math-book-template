@@ -2,9 +2,12 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 native=1
-for tool in python3 make latexmk bibtex codex; do
+for tool in python3 make latexmk codex; do
   command -v "$tool" >/dev/null 2>&1 || native=0
 done
+if [ "$native" = 1 ] && ! bash scripts/doctor.sh >/dev/null 2>&1; then
+  native=0
+fi
 if [ "$native" = 1 ]; then
   bash scripts/setup.sh
   make build
