@@ -9,3 +9,11 @@
 - 两份 GitHub 工作流通过 YAML 解析；Python 文件通过语法编译，shell 入口通过语法检查。
 
 容器构建与 GitHub Actions 的实际结果以仓库的 Book checks 运行记录为准。代理审校记录仅代表实际读取和重构的范围；测试及 PDF 构建不认证一本研究书的数学正确性。
+
+2026-10-07 的 Codex Cloud 接入验证：
+
+- 增加 10 项审校任务导出/登记测试，共 32 项通过；覆盖当前完整解答、部分解答、needs_work、过期输入、错误任务、不完整批准、无效报告格式、单元范围与路径边界。
+- `setup-codex-cloud.sh --verify-only` 在已有本机工具链上通过，逐章任务成功生成准确输入指纹与 PDF 页图片。
+- [Book checks / 5428d8c](https://github.com/MingchenXia/math-book-template/actions/runs/37601915607) 的两个 job 均成功：原 Dev Container 重建与构建通过；全新 Ubuntu runner 实际运行云端安装脚本，安装依赖、运行全部测试并编译六页示例书，重复运行同一脚本也成功。此原生验证没有嵌套 Codex CLI 登录或 API key。
+- 临时 Git 副本中的真实独立 CLI 解答审校，经新的共用验证入口保存报告并整合演示解答；公开模板仍保持未审校候选状态。没有把临时审校历史加入模板。
+- 上述 Linux 验证确认脚本与构建可用，不代表已经创建或发布了某个 ChatGPT 账号内的环境。实际云端还须按所选环境的网络策略运行安装、检查报告并 Publish。

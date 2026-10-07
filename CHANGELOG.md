@@ -6,6 +6,8 @@ Record substantive updates here with the author's date, actual changed passages,
 
 Added a repeatable native Debian/Ubuntu install-and-verify command for current Codex Cloud, using the same TeX package manifest as the Dev Container. Added current environment creation, Install script, Start skill and publish instructions, with explicit first-time account setup. Hosted cloud reviewers can export source-bound assignments and register independently produced structured reports without a nested CLI login; existing CLI review uses the same validation. The writer still cannot approve its own candidate, and stale or incomplete approvals remain rejected. Cloud deployment itself must be validated in the user's selected cloud environment before publishing it.
 
+All 32 tests, native PDF compilation, real independent CLI review in a temporary copy, and fresh Ubuntu installation/repeated setup passed. The updated Dev Container also rebuilt and compiled successfully. The selected user's Codex Cloud environment has not been created or published by this repository update; validation links and scope are recorded in docs/validation.md.
+
 ## 2026-10-07 — Template baseline
 
 Added a demonstration book, problem discovery, separate solution storage and review, automatic integration of current approved full solutions, a dedicated writing/review/editor workflow, and the completed-book proposal procedure. Local and CI validation are recorded in the template's release documentation.
