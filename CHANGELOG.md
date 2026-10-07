@@ -2,6 +2,12 @@
 
 Record substantive updates here with the author's date, actual changed passages, and checks actually performed. Preserve old entries. Do not describe reviewed-but-unchanged text as a correction.
 
+## 2026-10-07 — Manual problem and solution entry points
+
+Added visible homepage and generated problem-list links for browsing the list, adding a problem, and manually submitting/updating a solution. Added copyable problem/solution templates, GitHub web upload instructions, and CLI entry points `problem-add` and `solution-import`. Imports save author-supplied candidates without manufacturing approval; current source reviews, partial-solution handling and completed-book proposal branches retain their existing boundaries.
+
+All 45 workflow tests passed locally. In a separate temporary copy the actual CLI added a problem, imported an answer, synchronized the list and compiled the six-page PDF; the imported answer remained a candidate. Checked the new file links and command help. No new mathematical problem, proof or approval was added to the public demonstration book.
+
 ## 2026-10-07 — Codex Cloud setup
 
 Added a repeatable native Debian/Ubuntu install-and-verify command for current Codex Cloud, using the same TeX package manifest as the Dev Container. Added current environment creation, Install script, Start skill and publish instructions, with explicit first-time account setup. Hosted cloud reviewers can export source-bound assignments and register independently produced structured reports without a nested CLI login; existing CLI review uses the same validation. The writer still cannot approve its own candidate, and stale or incomplete approvals remain rejected. Cloud deployment itself must be validated in the user's selected cloud environment before publishing it.

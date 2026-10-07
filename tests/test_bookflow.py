@@ -59,6 +59,121 @@ class WorkflowTests(unittest.TestCase):
         flow.write_json(self.root / "build/response.json", report)
         return assignment, report
 
+    def manual_file(self, name, text):
+        path = self.root / "work" / name
+        flow.write(path, text)
+        return path.relative_to(self.root).as_posix()
+
+    def test_manual_problem_add_preserves_chapter_and_updates_list(self):
+        chapter = "book/chapters/02-questions.tex"
+        original = (self.root / chapter).read_text()
+        statement = self.manual_file("statement.tex", r"Is $\{x\in X:f(x)=0\}$ compact?" + "\n% Author comment")
+        flow.problem_add("OP-003", chapter, "Zero sets", statement)
+        self.assertTrue((self.root / chapter).read_text().startswith(original))
+        self.assertIn("OP-003", flow.problems())
+        self.assertEqual(flow.catalogue()[-1]["status"], "open")
+        self.assertIn("OP-003", flow.read_json(self.root / "research/open-problems.json")["problems"][-1]["id"])
+        flow.sync(check=True)
+
+    def test_manual_problem_duplicate_does_not_change_chapter(self):
+        chapter = "book/chapters/02-questions.tex"
+        original = (self.root / chapter).read_bytes()
+        statement = self.manual_file("statement.tex", "New question?")
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            flow.problem_add("OP-001", chapter, "Duplicate", statement)
+        self.assertEqual((self.root / chapter).read_bytes(), original)
+
+    def test_manual_problem_rejects_unbalanced_statement_without_editing(self):
+        chapter = "book/chapters/02-questions.tex"
+        original = (self.root / chapter).read_bytes()
+        statement = self.manual_file("statement.tex", "Question with {unclosed argument")
+        with self.assertRaisesRegex(ValueError, "Unbalanced"):
+            flow.problem_add("OP-003", chapter, "Malformed", statement)
+        self.assertEqual((self.root / chapter).read_bytes(), original)
+
+    def test_manual_problem_rolls_back_failed_reference_check(self):
+        chapter = "book/chapters/02-questions.tex"
+        original = (self.root / chapter).read_bytes()
+        statement = self.manual_file("statement.tex", r"Does \cref{lem:missing} hold?")
+        with self.assertRaisesRegex(ValueError, "Unknown cross-reference"):
+            flow.problem_add("OP-003", chapter, "Missing dependency", statement)
+        self.assertEqual((self.root / chapter).read_bytes(), original)
+
+    def test_manual_problem_rejects_root_and_inactive_inputs(self):
+        statement = self.manual_file("statement.tex", "Question?")
+        for chapter in ("book/main.tex", "book/not-active.tex"):
+            with self.assertRaisesRegex(ValueError, "active chapter"):
+                flow.problem_add("OP-003", chapter, "Question", statement)
+
+    def test_manual_solution_import_keeps_question_and_stays_unapproved(self):
+        original = (self.root / "book/chapters/02-questions.tex").read_bytes()
+        proof = (self.root / "research/solutions/OP-001/solution.tex").read_text()
+        supplied = self.manual_file("answer.tex", proof)
+        flow.solution_import("OP-002", supplied, "full", ["def:compactness"], [])
+        self.assertEqual((self.root / "book/chapters/02-questions.tex").read_bytes(), original)
+        meta = flow.read_json(self.root / "research/solutions/OP-002/solution.json")
+        self.assertEqual(meta["problem_id"], "OP-002")
+        self.assertEqual(meta["dependencies"], ["def:compactness"])
+        self.assertEqual((self.root / "research/solutions/OP-002/solution.tex").read_text(), proof)
+        self.assertEqual(flow.catalogue()[1]["status"], "candidate")
+        self.assertFalse((self.root / "research/reviews/solution-OP-002.json").exists())
+        self.assertFalse((self.root / "book/generated/solutions/OP-002.tex").exists())
+
+    def test_manual_partial_import_records_scope_without_closing_question(self):
+        supplied = self.manual_file("answer.tex", (self.root / "research/solutions/OP-001/solution.tex").read_text())
+        flow.solution_import("OP-002", supplied, "partial")
+        self.assertEqual(flow.catalogue()[1]["scope"], "partial")
+        self.assertFalse(flow.catalogue()[1]["integrated"])
+
+    def test_manual_solution_import_refuses_implicit_overwrite(self):
+        path = self.root / "research/solutions/OP-001/solution.tex"
+        original = path.read_bytes()
+        supplied = self.manual_file("answer.tex", path.read_text() + "\n% Changed version\n")
+        with self.assertRaisesRegex(ValueError, "already exists"):
+            flow.solution_import("OP-001", supplied, "full")
+        self.assertEqual(path.read_bytes(), original)
+
+    def test_manual_replacement_preserves_and_invalidates_old_review(self):
+        self.approve()
+        review = self.root / "research/reviews/solution-OP-001.json"
+        old_report = review.read_bytes()
+        supplied = self.manual_file("answer.tex", (self.root / "research/solutions/OP-001/solution.tex").read_text() + "\n% Revised candidate\n")
+        flow.solution_import("OP-001", supplied, "full", replace=True)
+        self.assertEqual(review.read_bytes(), old_report)
+        self.assertEqual(flow.catalogue()[0]["status"], "review_stale")
+        self.assertFalse(flow.catalogue()[0]["integrated"])
+
+    def test_manual_malformed_solution_cannot_replace_existing_proof(self):
+        path = self.root / "research/solutions/OP-001/solution.tex"
+        original = path.read_bytes()
+        supplied = self.manual_file("answer.tex", "An unsupported claim without a proof environment.")
+        with self.assertRaisesRegex(ValueError, "semantic result and proof"):
+            flow.solution_import("OP-001", supplied, "full", replace=True)
+        self.assertEqual(path.read_bytes(), original)
+
+    def test_manual_solution_requires_existing_problem(self):
+        with self.assertRaisesRegex(ValueError, "Unknown problem"):
+            flow.solution_import("OP-999", "work/answer.tex", "full")
+        self.assertFalse((self.root / "research/solutions/OP-999").exists())
+
+    def test_manual_solution_import_rejects_path_escape(self):
+        with self.assertRaisesRegex(ValueError, "escapes"):
+            flow.solution_import("OP-002", "../answer.tex", "full")
+        self.assertFalse((self.root / "research/solutions/OP-002").exists())
+
+    def test_manual_entries_require_proposal_branch_after_finish(self):
+        cfg = flow.config(); cfg["phase"] = "revision"; flow.write_json(self.root / "bookflow.json", cfg)
+        statement = self.manual_file("statement.tex", "Question?")
+        supplied = self.manual_file("answer.tex", (self.root / "research/solutions/OP-001/solution.tex").read_text())
+        with self.assertRaisesRegex(ValueError, "revision-start"):
+            flow.problem_add("OP-003", "book/chapters/02-questions.tex", "Question", statement)
+        with self.assertRaisesRegex(ValueError, "revision-start"):
+            flow.solution_import("OP-002", supplied, "full")
+        self.branch_mock.return_value = "revision/new-question"
+        flow.problem_add("OP-003", "book/chapters/02-questions.tex", "Question", statement)
+        flow.solution_import("OP-002", supplied, "full")
+        self.assertFalse(flow.catalogue()[1]["integrated"])
+
     def test_cloud_full_review_integrates_current_solution(self):
         self.cloud_review()
         flow.review_record("build/assignment.json", "build/response.json")

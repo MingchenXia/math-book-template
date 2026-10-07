@@ -139,6 +139,98 @@ def problems():
     return records
 
 
+def manual_source_branch():
+    if config()["phase"] == "revision" and not branch().startswith("revision/"):
+        fail("Use revision-start to create a revision/* proposal branch before adding a problem or solution")
+
+
+def problem_add(problem_id, chapter, title, statement_file):
+    """Insert an author-supplied problem into an active chapter and sync its list."""
+    manual_source_branch()
+    records = problems()
+    if not ID.fullmatch(problem_id) or problem_id in records:
+        fail(f"Invalid or duplicate problem ID: {problem_id}")
+    path = inside(ROOT, chapter)
+    if path not in sources() or path == inside(ROOT, config()["root_tex"]):
+        fail("Choose an active chapter input, not the root document")
+    original = path.read_text(encoding="utf-8")
+    body = uncomment(original)
+    if not re.search(r"\\chapter\*?(?:\[[^\]]*\])?\s*\{", body) or re.search(r"\\(?:begin|end)\s*\{document\}", body):
+        fail("Choose a standalone active chapter containing a chapter command and no document wrapper")
+    if not title.strip() or "\n" in title or "\r" in title:
+        fail("Use a nonempty single-line problem title")
+    statement = inside(ROOT, statement_file).read_text(encoding="utf-8").strip()
+    if not uncomment(statement).strip():
+        fail("Problem statement cannot be empty")
+    # Check balanced braced content before touching the manuscript. A trailing
+    # newline keeps a final TeX comment from consuming the closing macro brace.
+    wrapped = "{" + uncomment(statement) + "\n}"
+    _, end = argument(wrapped, 0)
+    if end != len(wrapped):
+        fail("Problem statement has unmatched closing braces")
+    if re.search(r"\\(?:BookProblem|input|include|chapter|section|documentclass|write18|openout)\b", uncomment(statement)) or re.search(r"\\(?:begin|end)\s*\{document\}", uncomment(statement)):
+        fail("Statement must be self-contained TeX without nested problems, chapter commands, inputs or document wrappers")
+    entry = f"\n\\BookProblem{{{problem_id}}}{{{tex_escape(title.strip())}}}{{\n{statement}\n}}\n"
+    try:
+        write(path, original + ("\n" if not original.endswith("\n") else "") + entry)
+        audit()
+    except Exception:
+        write(path, original)
+        raise
+    sync()
+    print("Added problem:", problem_id, "in", path.relative_to(ROOT))
+    print("Review its position in the chapter, then run make build and commit the chapter and research/open-problems.*")
+
+
+def solution_import(problem_id, source_file, scope, dependencies=None, references=None, replace=False):
+    """Import a manually written answer as an unapproved candidate."""
+    manual_source_branch()
+    records = problems()
+    if problem_id not in records:
+        fail(f"Unknown problem: {problem_id}; add its BookProblem first")
+    if scope not in {"full", "partial"}:
+        fail("Solution scope must be full or partial")
+    folder = inside(ROOT, "research/solutions/" + problem_id)
+    if folder.exists() and not replace:
+        fail(f"Solution folder already exists: {folder.relative_to(ROOT)}; edit it directly or use --replace explicitly")
+    tex_path, meta_path = inside(folder, "solution.tex"), inside(folder, "solution.json")
+    proof = inside(ROOT, source_file).read_text(encoding="utf-8")
+    if not proof.strip():
+        fail("Solution file cannot be empty")
+    # Validate in memory so a malformed submission cannot overwrite a candidate.
+    body = uncomment(proof)
+    if not RESULT.search(body) or "\\begin{proof}" not in body:
+        fail("Solution needs a semantic result and proof")
+    if re.search(r"\\(?:input|include|write18|openout|BookProblem)\b", body) or re.search(r"\\(?:documentclass|begin\s*\{document\}|end\s*\{document\})", body):
+        fail("Import a self-contained result/proof snippet without a document wrapper")
+    dependencies = list(dict.fromkeys(dependencies or []))
+    references = list(dict.fromkeys(references or []))
+    if any(not value.strip() for value in dependencies + references):
+        fail("Dependency labels and bibliography keys cannot be empty")
+    meta = {"problem_id": problem_id, "scope": scope, "tex_file": "solution.tex", "dependencies": dependencies,
+            "references": references, "note": "Manually submitted candidate. Independent review is required before integration."}
+    existed = folder.exists()
+    originals = {p: p.read_bytes() if p.exists() else None for p in (tex_path, meta_path)}
+    try:
+        write(tex_path, proof)
+        write_json(meta_path, meta)
+        solution(problem_id, records)
+    except Exception:
+        for path, content in originals.items():
+            if content is None:
+                path.unlink(missing_ok=True)
+            else:
+                path.write_bytes(content)
+        if not existed:
+            folder.rmdir()
+        raise
+    sync()
+    print("Imported candidate:", folder.relative_to(ROOT))
+    print("Current state:", next(r["status"] for r in catalogue() if r["id"] == problem_id))
+    print("Next: python3 scripts/bookflow.py review-prepare solution-review --problem", problem_id)
+    print("No approval was created. Keep the canonical BookProblem and register only an independently produced report.")
+
+
 def digest(files, extra=None):
     contents = {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
     serialized = json.dumps({"files": contents, "extra": extra}, sort_keys=True, ensure_ascii=False)
@@ -252,13 +344,15 @@ def tex_escape(value):
 def sync(check=False):
     records = catalogue()
     summary = {"problems": records, "counts": {s: sum(r["status"] == s for r in records) for s in sorted({r["status"] for r in records})}}
-    markdown = "# 问题目录\n\n自动生成；编辑书稿中的 `\\BookProblem`，不要手改此文件。`open` 表示本书尚未解决，不等于已核实的文献开放问题。\n\n"
+    markdown = "# 问题目录\n\n[新增开放问题](../docs/manual-entry.md#新增开放问题) · [手动提交解答](../docs/manual-entry.md#手动提交已经写好的解答) · [解答文件夹](solutions/)\n\n自动生成；编辑书稿中的 `\\BookProblem`，不要手改此文件。`open` 表示本书尚未解决，不等于已核实的文献开放问题。\n\n"
     for r in records:
         location = "../" + r["source"]
         title = r["title"].replace("\n", " ")
         markdown += f"## {r['id']} — {title}\n\n状态：`{r['status']}` · [书稿位置]({location})（源码第 {r['line']} 行）\n\n{r['statement_tex']}\n\n"
         if r.get("solution"):
-            markdown += f"[解答](../{r['solution']}) · 审校指纹：`{r['source_sha256']}`\n\n"
+            markdown += f"[解答](../{r['solution']}) · [提交或更新此问题的解答](../docs/manual-entry.md#手动提交已经写好的解答) · 审校指纹：`{r['source_sha256']}`\n\n"
+        else:
+            markdown += f"[为 {r['id']} 提交解答](../docs/manual-entry.md#手动提交已经写好的解答)\n\n"
     payloads = {
         ROOT / "research/open-problems.json": json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
         ROOT / "research/open-problems.md": markdown.rstrip() + "\n",
@@ -606,6 +700,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("sync"); p.add_argument("--check", action="store_true")
+    p = sub.add_parser("problem-add", help="Add an author-supplied open problem and synchronize the list"); p.add_argument("--id", required=True); p.add_argument("--chapter", required=True); p.add_argument("--title", required=True); p.add_argument("--statement-file", required=True)
+    p = sub.add_parser("solution-import", help="Import a manually written answer as a candidate, without approval"); p.add_argument("--problem", required=True); p.add_argument("--file", required=True); p.add_argument("--scope", choices=["full", "partial"], required=True); p.add_argument("--dependency", action="append", default=[]); p.add_argument("--reference", action="append", default=[]); p.add_argument("--replace", action="store_true")
     for name in ("audit", "build", "finish", "guard"):
         sub.add_parser(name)
     p = sub.add_parser("agent"); p.add_argument("role", choices=["review", "solution-review", "edit"]); p.add_argument("--problem"); p.add_argument("--dry-run", action="store_true"); p.add_argument("--unit"); p.add_argument("--pages")
@@ -616,6 +712,8 @@ def main():
     args = parser.parse_args()
     try:
         if args.command == "sync": sync(args.check)
+        elif args.command == "problem-add": problem_add(args.id, args.chapter, args.title, args.statement_file)
+        elif args.command == "solution-import": solution_import(args.problem, args.file, args.scope, args.dependency, args.reference, args.replace)
         elif args.command == "agent": agent(args.role, args.problem, args.dry_run, args.unit, args.pages)
         elif args.command == "review-prepare": review_prepare(args.role, args.problem, args.unit, args.pages)
         elif args.command == "review-record": review_record(args.assignment, args.report)

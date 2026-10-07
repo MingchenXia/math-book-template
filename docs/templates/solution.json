@@ -1,0 +1,8 @@
+{
+  "problem_id": "OP-XXX",
+  "scope": "full",
+  "tex_file": "solution.tex",
+  "dependencies": [],
+  "references": [],
+  "note": "Manually submitted candidate. Replace OP-XXX and set scope to partial if appropriate. Independent review is required before integration."
+}

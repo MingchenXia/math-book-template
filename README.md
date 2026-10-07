@@ -4,6 +4,13 @@
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/MingchenXia/math-book-template)
 
+| 问题与解答入口 | 操作 |
+| --- | --- |
+| [查看 Open Problem List](research/open-problems.md) | 查看稳定 ID、当前状态、书稿位置及每个问题的解答入口 |
+| [新增开放问题](docs/manual-entry.md#新增开放问题) | 手动编辑章节或用 `problem-add` 录入并同步目录 |
+| [手动提交已写好的解答](docs/manual-entry.md#手动提交已经写好的解答) | 上传结果与证明，或用 `solution-import` 建立候选解答 |
+| [解答文件夹](research/solutions/) | 每个 ID 保存元数据和完整/部分证明，独立审校后自动纳入书稿 |
+
 ## 一键开始
 
 **Codex 云端**：支持当前 **Work in → Cloud** 环境。首次选择仓库，把 [云端配置提示词](docs/codex-cloud.md) 发给配置 agent；它运行 `bash scripts/setup-codex-cloud.sh` 安装并验证。查看报告并点击 Publish 后，新任务直接选择该环境。云端宿主 agent 不需额外 CLI/API 登录，独立审校使用模板的 `review-prepare` / `review-record` 入口。首次的账号连接和环境发布仍须在 Codex 界面完成。
