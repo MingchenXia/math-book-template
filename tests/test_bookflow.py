@@ -48,6 +48,90 @@ class WorkflowTests(unittest.TestCase):
             "coverage": list(flow.COVERAGE) if coverage is None else coverage, "findings": [],
         })
 
+    def cloud_review(self, kind="solution", unit=None):
+        problem_id = "OP-001" if kind == "solution" else None
+        stamp = flow.solution(problem_id, flow.problems())[2] if problem_id else flow.book_digest()
+        assignment = {"kind": kind, "unit": unit, "problem_id": problem_id, "source_sha256": stamp, "pdf_previews": []}
+        report = {**{k: v for k, v in assignment.items() if k != "pdf_previews"},
+                  "reviewer": "independent test fixture", "verdict": "approved", "coverage": sorted(flow.COVERAGE),
+                  "summary": "Test-only report; not a mathematical approval", "findings": []}
+        flow.write_json(self.root / "build/assignment.json", assignment)
+        flow.write_json(self.root / "build/response.json", report)
+        return assignment, report
+
+    def test_cloud_full_review_integrates_current_solution(self):
+        self.cloud_review()
+        flow.review_record("build/assignment.json", "build/response.json")
+        self.assertEqual(flow.catalogue()[0]["status"], "resolved")
+
+    def test_cloud_partial_review_keeps_full_question_open(self):
+        path = self.root / "research/solutions/OP-001/solution.json"
+        meta = flow.read_json(path); meta["scope"] = "partial"; flow.write_json(path, meta)
+        self.cloud_review()
+        flow.review_record("build/assignment.json", "build/response.json")
+        self.assertEqual(flow.catalogue()[0]["status"], "partial")
+
+    def test_cloud_review_rejects_changed_source(self):
+        self.cloud_review()
+        proof = self.root / "research/solutions/OP-001/solution.tex"
+        proof.write_text(proof.read_text() + "\n% Revised proof\n")
+        with self.assertRaisesRegex(ValueError, "Source changed"):
+            flow.review_record("build/assignment.json", "build/response.json")
+        self.assertFalse((self.root / "research/reviews/solution-OP-001.json").exists())
+
+    def test_cloud_review_rejects_different_assignment(self):
+        _, report = self.cloud_review()
+        report["problem_id"] = "OP-002"
+        flow.write_json(self.root / "build/response.json", report)
+        with self.assertRaisesRegex(ValueError, "does not match"):
+            flow.review_record("build/assignment.json", "build/response.json")
+
+    def test_cloud_review_rejects_incomplete_approval(self):
+        _, report = self.cloud_review()
+        report["coverage"].remove("second_pass")
+        flow.write_json(self.root / "build/response.json", report)
+        with self.assertRaisesRegex(ValueError, "Incomplete approval"):
+            flow.review_record("build/assignment.json", "build/response.json")
+
+    def test_cloud_review_rejects_unstructured_findings(self):
+        _, report = self.cloud_review()
+        report["findings"] = [{"severity": "minor", "message": "Missing file and locator"}]
+        flow.write_json(self.root / "build/response.json", report)
+        with self.assertRaisesRegex(ValueError, "finding fields"):
+            flow.review_record("build/assignment.json", "build/response.json")
+
+    def test_cloud_needs_work_is_saved_without_integration(self):
+        _, report = self.cloud_review()
+        report["verdict"] = "needs_work"
+        report["coverage"] = ["statement"]
+        report["findings"] = [{"severity": "major", "file": "research/solutions/OP-001/solution.tex", "line": 1,
+                               "message": "Test-only gap", "suggestion": "Complete the proof"}]
+        flow.write_json(self.root / "build/response.json", report)
+        flow.review_record("build/assignment.json", "build/response.json")
+        self.assertEqual(flow.catalogue()[0]["status"], "needs_work")
+        self.assertFalse(flow.catalogue()[0]["integrated"])
+
+    def test_cloud_chapter_review_records_only_assigned_active_input(self):
+        unit = "book/chapters/01-foundations.tex"
+        _, report = self.cloud_review("chapter", unit)
+        flow.review_record("build/assignment.json", "build/response.json")
+        self.assertEqual(flow.read_json(flow.chapter_report_path(unit)), report)
+        self.assertFalse(flow.book_review_complete())
+
+    def test_cloud_prepare_exports_exact_assignment_without_cli(self):
+        shutil.copytree(REPO / "agents", self.root / "agents")
+        with patch.object(flow, "run", side_effect=AssertionError("No CLI may execute")):
+            flow.review_prepare("solution-review", "OP-001")
+        assignment_path = next((self.root / "build/review-packets").glob("*/assignment.json"))
+        assignment = flow.read_json(assignment_path)
+        self.assertEqual(assignment["source_sha256"], flow.solution("OP-001", flow.problems())[2])
+        self.assertIn(assignment["source_sha256"], (assignment_path.parent / "prompt.md").read_text())
+
+    def test_cloud_review_cannot_read_report_outside_repository(self):
+        self.cloud_review()
+        with self.assertRaisesRegex(ValueError, "escapes"):
+            flow.review_record("build/assignment.json", "../response.json")
+
     def test_unreviewed_answer_does_not_replace_question(self):
         flow.sync()
         self.assertEqual(flow.catalogue()[0]["status"], "candidate")

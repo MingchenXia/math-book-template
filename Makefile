@@ -1,8 +1,10 @@
 PYTHON ?= python3
 FLOW = $(PYTHON) scripts/bookflow.py
-.PHONY: setup sync check test build review edit finish doctor watch
+.PHONY: setup cloud-setup sync check test build review edit finish doctor watch
 setup:
 	bash scripts/setup.sh
+cloud-setup:
+	bash scripts/setup-codex-cloud.sh
 sync:
 	$(FLOW) sync
 check:

@@ -1,0 +1,16 @@
+git
+make
+python3
+ca-certificates
+latexmk
+biber
+poppler-utils
+texlive-latex-extra
+texlive-bibtex-extra
+texlive-fonts-recommended
+texlive-science
+texlive-xetex
+texlive-luatex
+texlive-lang-chinese
+fonts-noto-cjk
+lmodern

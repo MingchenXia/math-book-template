@@ -9,6 +9,23 @@ concurrency:
   group: book-checks-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  native-cloud-setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install and verify without Docker or nested Codex authentication
+        run: bash scripts/setup-codex-cloud.sh
+      - name: Verify a repeated setup succeeds
+        run: bash scripts/setup-codex-cloud.sh
+      - name: Preserve native cloud setup build
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-setup-${{ github.sha }}
+          path: |
+            build/pdf/main.pdf
+            build/build-manifest.json
+          if-no-files-found: error
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30

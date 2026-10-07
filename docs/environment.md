@@ -1,5 +1,7 @@
 # 一键环境
 
+Codex Cloud 使用 [独立的云端配置流程](codex-cloud.md)：`bash scripts/setup-codex-cloud.sh` 直接安装仓库的系统包清单，验证后由使用者在云端界面发布环境。它不自动读取 Dev Container 配置。当前宿主 agent 可以直接写书，并通过审校任务导出/登记入口组织独立审核；不必把个人 CLI 登录复制进环境。
+
 优先用 GitHub Codespaces 或 VS Code 的 **Dev Containers: Reopen in Container**。`.devcontainer/Dockerfile` 安装 Node 22、Python、TeX、Biber、MakeIndex、Poppler 和 `@openai/codex@0.157.1`。容器用普通用户工作，不携带登录凭据。第一次启动自动执行 setup 和示例编译。容器配置机制见 [GitHub 官方说明](https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/introduction-to-dev-containers)。
 
 `bash start.sh` 优先使用已安装的本地工具；工具不全时用 Docker 构建同一个环境。它只准备环境和编译，不创建云服务或登录账号。Docker 命令模式结束后容器退出；需要完整编辑会话用 Dev Containers。容器基础镜像和 Debian 包使用维护中的版本标签，Codex CLI 固定版本；这是可重建的工具配置，并非字节级锁定的系统镜像。

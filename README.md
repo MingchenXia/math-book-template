@@ -6,6 +6,10 @@
 
 ## 一键开始
 
+**Codex 云端**：支持当前 **Work in → Cloud** 环境。首次选择仓库，把 [云端配置提示词](docs/codex-cloud.md) 发给配置 agent；它运行 `bash scripts/setup-codex-cloud.sh` 安装并验证。查看报告并点击 Publish 后，新任务直接选择该环境。云端宿主 agent 不需额外 CLI/API 登录，独立审校使用模板的 `review-prepare` / `review-record` 入口。首次的账号连接和环境发布仍须在 Codex 界面完成。
+
+**GitHub Codespaces**：
+
 点击 **Use this template → Create a new repository** 为你的书建立仓库，然后 **Code → Codespaces → Create codespace**。环境会自动安装 TeX、Biber、Python、PDF 工具和固定版本 Codex CLI，并编译示例书。也可以点击上方按钮直接试用模板。首次构建容器需要下载 TeX，耗时取决于网络。
 
 本地有 TeX/Codex 或 Docker 时，一条命令准备环境并生成 PDF：
@@ -16,7 +20,7 @@ bash start.sh
 
 编辑 `bookflow.json` 中的书名、作者，按 `PLAN.md` 确定读者和范围，替换 `book/chapters/` 的示例。PDF 在 `build/pdf/main.pdf`。示例的两个问题都是初等的演示任务，并非文献开放问题。
 
-登录自己的 Codex 账号后即可运行专用 agent：
+在本地或 Codespaces 登录自己的 Codex 账号后即可运行专用 CLI agent（云端宿主流程见 [云端说明](docs/codex-cloud.md)）：
 
 ```sh
 codex login

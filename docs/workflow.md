@@ -14,6 +14,8 @@
 
 候选元数据和完整证明保留在 `research/solutions/ID/`，审校报告保留在 `research/reviews/`。读写分工由命令实现：writer/editor 使用 workspace-write，reviewer 在新 CLI 会话中使用 read-only，结构化输出由 CLI 宿主保存。写作 agent 不准批准自己的结果。模板可以保存人工审校报告，但 approved 字段和 SHA-256 是一致性记录，不是身份认证或形式证明。
 
+云端宿主或外部独立 reviewer 可用 `review-prepare` 导出固定输入的 prompt，再用 `review-record` 登记实际返回的 JSON；CLI 审校与此入口共用格式、范围、当前指纹和覆盖项验证。分工仍要求独立只读审校；导入命令不会自行检查 reviewer 的身份。详见 [Codex 云端说明](codex-cloud.md)。
+
 审校通过必须完成陈述、证明、依赖、来源和第二遍通读。整书报告还要列明 PDF 布局是否实际检查；未能完成整书读取的 agent 应给出 needs_work 和下一章检查范围，而不是抽样后批准。大量书稿用 `research/editorial/revision-queue.json` 将连续的整章审阅拆成有限单元，在 STATUS 中记录实际范围；终审前核对全部输入是否覆盖。
 
 长书的可执行入口是 `python3 scripts/bookflow.py agent review --unit book/chapters/01-foundations.tex --pages 4-12`。工作流先编译并渲染指定物理页，交给只读 agent 做格式检查。根文件、preamble、每个活跃递归输入都须有 current approved 的 chapter 报告；全书指纹一致才可合成终审，源文件改动使旧报告全部过期。60 页以上不直接运行无边界的整书审校；GitHub 短书审校步骤失败时保留已经完成的解答审校结果，长书使用逐单元流程。自动渲染页范围不能替你判断修改页是否齐全，审校必须明确实际覆盖范围。

@@ -405,14 +405,15 @@ def review_previews(pages=None):
     return images
 
 
-def agent(role, problem_id=None, dry_run=False, unit=None, pages=None):
-    cli_defaults = ["--ignore-user-config"] if os.environ.get("BOOKFLOW_CLI_DEFAULTS") == "1" else []
-    if role == "edit" and config()["phase"] == "revision" and not branch().startswith("revision/"):
-        fail("Start a revision branch before editing a completed book")
+def review_assignment(role, problem_id=None, unit=None, pages=None, dry_run=False):
     if role == "review" and not dry_run:
         build()
     if unit and role != "review":
         fail("--unit applies only to book review")
+    if pages and role != "review":
+        fail("--pages applies only to book review")
+    if problem_id and role != "solution-review":
+        fail("--problem applies only to solution review")
     if unit and inside(ROOT, unit) not in sources():
         fail("Review unit must be an active TeX input")
     if role == "solution-review":
@@ -429,7 +430,82 @@ def agent(role, problem_id=None, dry_run=False, unit=None, pages=None):
             kind, destination = "chapter", chapter_report_path(unit)
     prompt = (ROOT / "agents" / (role + ".md")).read_text(encoding="utf-8")
     previews = review_previews(pages) if role == "review" and not dry_run else []
-    prompt += "\n\nCurrent assignment (data):\n" + json.dumps({"kind": kind, "unit": unit, "problem_id": problem_id, "source_sha256": stamp, "pdf_previews": previews}, ensure_ascii=False)
+    assignment = {"kind": kind, "unit": unit, "problem_id": problem_id, "source_sha256": stamp, "pdf_previews": previews}
+    prompt += "\n\nCurrent assignment (data):\n" + json.dumps(assignment, ensure_ascii=False)
+    return assignment, destination, prompt
+
+
+def review_prepare(role, problem_id=None, unit=None, pages=None):
+    assignment, destination, prompt = review_assignment(role, problem_id, unit, pages)
+    code = hashlib.sha256(json.dumps(assignment, sort_keys=True).encode()).hexdigest()[:16]
+    folder = ROOT / "build/review-packets" / code
+    write_json(folder / "assignment.json", assignment)
+    write(folder / "prompt.md", prompt + "\n")
+    print("Assignment:", folder / "assignment.json")
+    print("Reviewer prompt:", folder / "prompt.md")
+    print("After a separate review, record its JSON with: python3 scripts/bookflow.py review-record --assignment", (folder / "assignment.json").relative_to(ROOT), "--report <reviewer-output.json>")
+
+
+def validate_review_shape(report):
+    fields = {"kind", "unit", "problem_id", "source_sha256", "reviewer", "verdict", "coverage", "summary", "findings"}
+    if not isinstance(report, dict) or set(report) != fields:
+        fail("Review must contain exactly the fields in agents/review.schema.json")
+    for field in ("source_sha256", "reviewer", "summary"):
+        if not isinstance(report[field], str) or not report[field].strip():
+            fail(f"Review needs a nonempty {field}")
+    if report["kind"] not in {"book", "chapter", "solution"} or report["verdict"] not in {"approved", "needs_work", "rejected"}:
+        fail("Invalid review kind or verdict")
+    if any(report[k] is not None and not isinstance(report[k], str) for k in ("unit", "problem_id")):
+        fail("Review unit and problem_id must be strings or null")
+    coverage = report["coverage"]
+    if not isinstance(coverage, list) or any(not isinstance(c, str) or c not in COVERAGE for c in coverage):
+        fail("Invalid review coverage")
+    if not isinstance(report["findings"], list):
+        fail("Review findings must be a list")
+    for finding in report["findings"]:
+        if not isinstance(finding, dict) or set(finding) != {"severity", "file", "line", "message", "suggestion"}:
+            fail("Invalid review finding fields")
+        if finding["severity"] not in {"blocking", "major", "minor"} or type(finding["line"]) is not int or finding["line"] < 1:
+            fail("Invalid review finding severity or line")
+        if any(not isinstance(finding[k], str) or not finding[k].strip() for k in ("file", "message", "suggestion")):
+            fail("Review finding needs a file, message and suggestion")
+
+
+def review_record(assignment_path, report_path):
+    assignment = read_json(inside(ROOT, assignment_path))
+    report = read_json(inside(ROOT, report_path))
+    validate_review_shape(report)
+    kind, problem_id, unit = (assignment.get(k) for k in ("kind", "problem_id", "unit"))
+    stamp = assignment.get("source_sha256")
+    if kind == "solution" and unit is None:
+        item = solution(problem_id, problems())
+        if item is None:
+            fail("No candidate solution")
+        current = item[2]
+        destination = ROOT / "research/reviews" / f"solution-{problem_id}.json"
+    elif kind in {"book", "chapter"} and problem_id is None:
+        if (kind == "book" and unit is not None) or (kind == "chapter" and (not isinstance(unit, str) or inside(ROOT, unit) not in sources())):
+            fail("Invalid book review unit")
+        current = book_digest()
+        destination = chapter_report_path(unit) if kind == "chapter" else ROOT / "research/reviews/book.json"
+    else:
+        fail("Invalid review assignment")
+    if current != stamp:
+        fail("Source changed during review; discard the report and rerun")
+    if any(report.get(k) != assignment.get(k) for k in ("source_sha256", "kind", "problem_id", "unit")):
+        fail("Review response does not match the assigned input")
+    if report["verdict"] == "approved" and not valid_review(report, stamp, kind, problem_id, unit):
+        fail("Incomplete approval report; all coverage areas and a second pass are required")
+    write_json(destination, report)
+    print("Review:", destination)
+    sync()
+
+
+def agent(role, problem_id=None, dry_run=False, unit=None, pages=None):
+    cli_defaults = ["--ignore-user-config"] if os.environ.get("BOOKFLOW_CLI_DEFAULTS") == "1" else []
+    if role == "edit" and config()["phase"] == "revision" and not branch().startswith("revision/"):
+        fail("Start a revision branch before editing a completed book")
+    assignment, destination, prompt = review_assignment(role, problem_id, unit, pages, dry_run)
     if role == "edit":
         command = ["codex", "exec", *cli_defaults, "--sandbox", "workspace-write", "--cd", str(ROOT), "-"]
         if dry_run:
@@ -446,18 +522,10 @@ def agent(role, problem_id=None, dry_run=False, unit=None, pages=None):
     (ROOT / "build").mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(dir=ROOT / "build") as temp:
         response = Path(temp) / "review.json"
+        assignment_file = Path(temp) / "assignment.json"
+        write_json(assignment_file, assignment)
         run(command + [str(response), "-"], input=prompt, text=True, cwd=ROOT)
-        report = read_json(response)
-    current = solution(problem_id, problems())[2] if kind == "solution" else book_digest()
-    if current != stamp:
-        fail("Source changed during review; discard the report and rerun")
-    if report.get("source_sha256") != stamp or report.get("kind") != kind or report.get("problem_id") != problem_id or report.get("unit") != unit:
-        fail("Review response does not match the assigned input")
-    if report.get("verdict") == "approved" and not valid_review(report, stamp, kind, problem_id, unit):
-        fail("Incomplete approval report; all coverage areas and a second pass are required")
-    write_json(destination, report)
-    print("Review:", destination)
-    sync()
+        review_record(assignment_file, response)
 
 
 def finish():
@@ -541,12 +609,16 @@ def main():
     for name in ("audit", "build", "finish", "guard"):
         sub.add_parser(name)
     p = sub.add_parser("agent"); p.add_argument("role", choices=["review", "solution-review", "edit"]); p.add_argument("--problem"); p.add_argument("--dry-run", action="store_true"); p.add_argument("--unit"); p.add_argument("--pages")
+    p = sub.add_parser("review-prepare"); p.add_argument("role", choices=["review", "solution-review"]); p.add_argument("--problem"); p.add_argument("--unit"); p.add_argument("--pages")
+    p = sub.add_parser("review-record"); p.add_argument("--assignment", required=True); p.add_argument("--report", required=True)
     p = sub.add_parser("revision-start"); p.add_argument("name")
     p = sub.add_parser("revision-prepare"); p.add_argument("--base", default="main"); p.add_argument("--pages", required=True); p.add_argument("--summary", required=True)
     args = parser.parse_args()
     try:
         if args.command == "sync": sync(args.check)
         elif args.command == "agent": agent(args.role, args.problem, args.dry_run, args.unit, args.pages)
+        elif args.command == "review-prepare": review_prepare(args.role, args.problem, args.unit, args.pages)
+        elif args.command == "review-record": review_record(args.assignment, args.report)
         elif args.command == "revision-start": revision_start(args.name)
         elif args.command == "revision-prepare": revision_prepare(args.base, args.pages, args.summary)
         else: globals()[args.command]()
