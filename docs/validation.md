@@ -1,25 +1,31 @@
-# 模板验证记录
+# Template validation record
 
-2026-10-07 的初始模板验证：
+Initial template validation on 2026-10-07:
 
-- 22 项标准库测试通过。覆盖审批前后整合、部分范围、过期输入、二进制图像改动、逐单元终审汇总、成稿基线与分支限制、输入循环、稳定 ID、路径边界和引用错误。
-- 本机 `bash start.sh`、`make sync`、`make check`、pdfLaTeX/BibTeX/MakeIndex 构建通过，示例 PDF 共 6 个物理页。最终日志没有未定义引用或重复标签；空示例 bibliography 与 BibLaTeX 的 BibTeX fallback 提示保留，不屏蔽日志。
-- 实际在临时副本运行独立只读 Codex 解答审校。示例证明获得绑定当前输入的完整范围报告，原问题随后自动整合为已解决结果；公开模板仍保留未审校候选，便于新使用者演练。
-- 同一临时副本的整书 agent 完成两次直接通读和六页 PDF 图片检查，返回 approved 与三条具体编辑建议。模板补上拓扑空间的显式声明，并使章节开头兼容问题解决前后的状态；临时副本的审校记录不冒充新使用者的验证历史。
-- 两份 GitHub 工作流通过 YAML 解析；Python 文件通过语法编译，shell 入口通过语法检查。
+- All 22 standard-library tests passed, covering integration before/after approval, partial answers, stale input, binary figures, unit review composition, completion baselines and branch limits, input cycles, stable IDs, path boundaries and reference errors.
+- Local `bash start.sh`, `make sync`, `make check` and pdfLaTeX/BibTeX/MakeIndex builds passed. The example PDF had six physical pages. Final logs contained no unresolved references or duplicate labels. Empty-bibliography and BibLaTeX BibTeX-fallback notices were retained.
+- A real independent read-only Codex solution review ran in a temporary copy. Its complete report bound the current input, and the demonstration proof was incorporated. The public template retained its unreviewed candidate for practice.
+- In the same temporary copy, the whole-book reviewer read twice and inspected all six PDF page images. It returned approved with three concrete editorial suggestions. The template clarified the ambient topology and made the chapter opening valid before and after integration. Temporary review records do not stand in for a new user's verification history.
+- Both GitHub workflows passed YAML parsing. Python files passed syntax compilation and shell entry points passed syntax checks.
 
-容器构建与 GitHub Actions 的实际结果以仓库的 Book checks 运行记录为准。代理审校记录仅代表实际读取和重构的范围；测试及 PDF 构建不认证一本研究书的数学正确性。
+Refer to the repository's Book checks runs for actual container build results. Review records cover only what was read and reconstructed. Tests and PDF compilation do not certify a research book's mathematical correctness.
 
-2026-10-07 的 Codex Cloud 接入验证：
+Codex Cloud integration validation on 2026-10-07:
 
-- 增加 10 项审校任务导出/登记测试，共 32 项通过；覆盖当前完整解答、部分解答、needs_work、过期输入、错误任务、不完整批准、无效报告格式、单元范围与路径边界。
-- `setup-codex-cloud.sh --verify-only` 在已有本机工具链上通过，逐章任务成功生成准确输入指纹与 PDF 页图片。
-- [Book checks / 5428d8c](https://github.com/MingchenXia/math-book-template/actions/runs/37601915607) 的两个 job 均成功：原 Dev Container 重建与构建通过；全新 Ubuntu runner 实际运行云端安装脚本，安装依赖、运行全部测试并编译六页示例书，重复运行同一脚本也成功。此原生验证没有嵌套 Codex CLI 登录或 API key。
-- 临时 Git 副本中的真实独立 CLI 解答审校，经新的共用验证入口保存报告并整合演示解答；公开模板仍保持未审校候选状态。没有把临时审校历史加入模板。
-- 上述 Linux 验证确认脚本与构建可用，不代表已经创建或发布了某个 ChatGPT 账号内的环境。实际云端还须按所选环境的网络策略运行安装、检查报告并 Publish。
+- Ten assignment export/registration tests brought the total to 32 passing tests. They cover complete and partial solutions, needs_work, stale input, wrong assignments, incomplete approval, invalid formats, unit scope and path boundaries.
+- `setup-codex-cloud.sh --verify-only` passed on the prepared local toolchain. A chapter assignment generated its exact input fingerprint and PDF page images.
+- Both jobs in [Book checks / 5428d8c](https://github.com/MingchenXia/math-book-template/actions/runs/37601915607) succeeded. The Dev Container rebuilt and compiled. A fresh Ubuntu runner executed the native installation script, installed dependencies, ran tests and compiled the six-page book. Repeating setup also succeeded, without nested Codex CLI login or an API key.
+- Real independent CLI proof review in a temporary Git copy passed the shared registration validation and integrated the demonstration answer. The public template retained the candidate and did not include temporary review history.
+- Linux validation establishes script/build behavior, not creation or publication of an environment in a ChatGPT account. Actual cloud setup must run under the selected network policy, be reviewed and be published.
 
-2026-10-07 的手动问题/解答入口验证：
+Manual problem/solution entry validation on 2026-10-07:
 
-- 新增 13 项录入测试，总计 45 项本地通过；覆盖目录同步、保留原章节、重复 ID、不平衡陈述、错误引用回滚、非活跃输入、未审校导入、部分范围、拒绝隐式覆盖、替代版本使旧报告过期、未知问题、路径边界和成稿提案分支。
-- 在临时副本实际运行 `problem-add` 和 `solution-import`，确认原问题保留、手动解答为 candidate、没有创建审校报告，并成功编译六页 PDF。公开示例没有加入此临时问题或解答。
-- 首页、生成目录和解答 README 的手动入口文件链接均可解析，两个命令的 help 可用；本机 `make check` 与示例书构建通过。Linux 结果以相应 Book checks 运行记录为准。
+- Thirteen submission tests brought the total to 45 local passing tests. They cover catalogue synchronization, preserving chapters, duplicate IDs, unbalanced statements, reference-failure rollback, inactive inputs, unreviewed imports, partial scope, refusal of implicit overwrite, stale reviews after replacement, unknown problems, path boundaries and revision proposal branches.
+- Actual `problem-add` and `solution-import` commands ran in a temporary copy. The original question remained, the imported answer stayed candidate, no review approval was created, and the six-page PDF compiled. That temporary problem and answer were not added to the public example.
+- Manual entry links in the homepage, catalogue and solution README resolved, command help was available, and local `make check` and PDF builds passed. Refer to the corresponding Book checks run for Linux results.
+
+English-language update validation on 2026-10-09:
+
+- Translated all remaining Chinese repository prose, including test-fixture documentation and the catalogue generator. Scanning all 73 tracked files found no remaining Chinese text. The regenerated catalogue and its submission links are in English.
+- All local Markdown file links and heading anchors resolved after translation.
+- All 45 existing workflow tests, `make sync`, `make check` and the local PDF build passed. The mathematical manuscript was not changed, and no new mathematical approval was claimed.

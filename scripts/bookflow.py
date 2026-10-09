@@ -344,15 +344,15 @@ def tex_escape(value):
 def sync(check=False):
     records = catalogue()
     summary = {"problems": records, "counts": {s: sum(r["status"] == s for r in records) for s in sorted({r["status"] for r in records})}}
-    markdown = "# 问题目录\n\n[新增开放问题](../docs/manual-entry.md#新增开放问题) · [手动提交解答](../docs/manual-entry.md#手动提交已经写好的解答) · [解答文件夹](solutions/)\n\n自动生成；编辑书稿中的 `\\BookProblem`，不要手改此文件。`open` 表示本书尚未解决，不等于已核实的文献开放问题。\n\n"
+    markdown = "# Open Problem List\n\n[Add an open problem](../docs/manual-entry.md#add-an-open-problem) · [Submit a solution manually](../docs/manual-entry.md#submit-an-existing-solution) · [Solution folders](solutions/)\n\nAutomatically generated. Edit `\\BookProblem` in the manuscript instead of this file. `open` means unresolved in this book, not a verified open problem in the literature.\n\n"
     for r in records:
         location = "../" + r["source"]
         title = r["title"].replace("\n", " ")
-        markdown += f"## {r['id']} — {title}\n\n状态：`{r['status']}` · [书稿位置]({location})（源码第 {r['line']} 行）\n\n{r['statement_tex']}\n\n"
+        markdown += f"## {r['id']} — {title}\n\nStatus: `{r['status']}` · [Manuscript location]({location}) (source line {r['line']})\n\n{r['statement_tex']}\n\n"
         if r.get("solution"):
-            markdown += f"[解答](../{r['solution']}) · [提交或更新此问题的解答](../docs/manual-entry.md#手动提交已经写好的解答) · 审校指纹：`{r['source_sha256']}`\n\n"
+            markdown += f"[Solution](../{r['solution']}) · [Submit or update this solution](../docs/manual-entry.md#submit-an-existing-solution) · Review fingerprint: `{r['source_sha256']}`\n\n"
         else:
-            markdown += f"[为 {r['id']} 提交解答](../docs/manual-entry.md#手动提交已经写好的解答)\n\n"
+            markdown += f"[Submit a solution for {r['id']}](../docs/manual-entry.md#submit-an-existing-solution)\n\n"
     payloads = {
         ROOT / "research/open-problems.json": json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
         ROOT / "research/open-problems.md": markdown.rstrip() + "\n",

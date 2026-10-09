@@ -2,6 +2,12 @@
 
 Record substantive updates here with the author's date, actual changed passages, and checks actually performed. Preserve old entries. Do not describe reviewed-but-unchanged text as a correction.
 
+## 2026-10-09 — English throughout the repository
+
+Translated the homepage, environment and revision guides, manual submission instructions, validation record, reference/solution/review documentation and test-fixture documentation into English. Updated the catalogue generator and regenerated the Open Problem List with English headings, status labels and submission links. Recorded the English requirement in AGENTS.md and PLAN.md so future repository content follows the same language.
+
+Checked all 73 tracked files for remaining Chinese text and all local Markdown links and heading anchors; none remained or failed. All 45 existing tests, catalogue/static checks and the local PDF build passed. The mathematical manuscript and workflow decisions were preserved.
+
 ## 2026-10-07 — Manual problem and solution entry points
 
 Added visible homepage and generated problem-list links for browsing the list, adding a problem, and manually submitting/updating a solution. Added copyable problem/solution templates, GitHub web upload instructions, and CLI entry points `problem-add` and `solution-import`. Imports save author-supplied candidates without manufacturing approval; current source reviews, partial-solution handling and completed-book proposal branches retain their existing boundaries.

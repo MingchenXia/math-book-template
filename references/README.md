@@ -1,5 +1,5 @@
-# 参考文献
+# References
 
-`references.bib` 是整书唯一的文献数据库。`papers/` 放 PDF 或作者提供的原始资料；默认忽略这些全文，不会提交到公开 Git。`notes/` 放可以公开的阅读记录、已核实的准确版本、定理页码及本书调用的位置。
+`references.bib` is the book's single bibliography database. Store PDFs or author-supplied source material in `papers/`; full texts are ignored by default and are not committed to public Git. Store reading notes, verified versions, theorem/page locators and the book's citation locations in `notes/` when those notes can be shared publicly.
 
-一份阅读记录至少写明：文献 key、实际读取的版本、定位信息、核实的假设和结论、是否完整重构证明、被哪些章节调用。元数据核查与数学内容核查分开记录。不要把摘要检索当作证明核实。
+Each reading note should identify the bibliography key, version actually read, precise locator, checked hypotheses and conclusion, whether the proof was fully reconstructed, and the chapters that use it. Record metadata checks separately from mathematical verification. Finding an abstract does not verify a proof.
