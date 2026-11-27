@@ -360,9 +360,16 @@ class WorkflowTests(unittest.TestCase):
 
     def test_missing_reference_is_rejected(self):
         p = self.root / "book/chapters/01-foundations.tex"
-        p.write_text(p.read_text() + r"See \cref{lem:missing}.")
-        with self.assertRaisesRegex(ValueError, "Unknown cross-reference"):
-            flow.audit()
+        source = p.read_text()
+        for reference in (
+            r"\cref{lem:missing}",
+            r"\crefrange{lem:missing}{lem:compact-image}",
+            r"\Crefrange{def:compactness}{lem:missing}",
+        ):
+            with self.subTest(reference=reference):
+                p.write_text(source + "\n" + reference + ".")
+                with self.assertRaisesRegex(ValueError, "Unknown cross-reference: lem:missing"):
+                    flow.audit()
 
     def test_finish_requires_current_full_review(self):
         with self.assertRaisesRegex(ValueError, "full-book review"):

@@ -396,7 +396,10 @@ def audit():
     available = set(labels) | {"prob:" + r["id"] for r in records}
     cited = set()
     for body in bodies:
-        for refs in re.findall(r"\\(?:ref|eqref|cref|Cref|pageref)\{([^{}]+)\}", body):
+        references = re.findall(r"\\(?:ref|eqref|[cC]ref|pageref)\*?\{([^{}]+)\}", body)
+        for start, end in re.findall(r"\\[cC]refrange\*?\{([^{}]+)\}\{([^{}]+)\}", body):
+            references.extend((start, end))
+        for refs in references:
             for label in refs.split(","):
                 if label.strip() not in available:
                     fail(f"Unknown cross-reference: {label}")
