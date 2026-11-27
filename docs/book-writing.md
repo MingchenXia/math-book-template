@@ -43,9 +43,10 @@ typography, in the project files. [Plan](../PLAN.md) ·
   invariance used in a symmetry reduction. Distinguish existence,
   uniqueness of a solution and convergence to a selected solution.
 - Choose semantic theorem environments and stable labels. Use
-  `\eqref` for equation references and the project's cross-reference
-  conventions for other results. Keep notation and layout consistent
-  with the existing class and preamble.
+  `\cref` in running text and `\Cref` at the start of a sentence
+  for internal references, including equations. For example, write
+  `by \cref{eq:energy}` or `\Cref{lem:compact-image} gives ...`.
+  Use `\crefrange` and `\Crefrange` for inclusive ranges.
 
 ## Explain proofs and credit sources
 
