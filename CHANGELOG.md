@@ -2,6 +2,18 @@
 
 Record substantive updates here with the author's date, actual changed passages, and checks actually performed. Preserve old entries. Do not describe reviewed-but-unchanged text as a correction.
 
+## 2026-11-27 — Reusable book-writing guidance
+
+Added a shared guide for reader-oriented openings, notation and assumptions,
+proof exposition, precise attribution, two direct reads, and final PDF and
+index inspection. The editor and both review roles now read it. The plan
+records the scope of book-specific author directions, and the blueprint
+connects the reading route to the order of results.
+
+All 45 workflow tests passed, and the demonstration PDF compiled. Checked
+the local Markdown links and confirmed that the CLI prompts and hosted
+review packets point to the guide.
+
 ## 2026-10-09 — English throughout the repository
 
 Translated the homepage, environment and revision guides, manual submission instructions, validation record, reference/solution/review documentation and test-fixture documentation into English. Updated the catalogue generator and regenerated the Open Problem List with English headings, status labels and submission links. Recorded the English requirement in AGENTS.md and PLAN.md so future repository content follows the same language.

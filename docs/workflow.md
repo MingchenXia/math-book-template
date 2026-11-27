@@ -1,5 +1,7 @@
 # Manuscript, problem and solution workflow
 
+Use the same writing guidance for the editor's chapter pass and the independent review. For each unit, record which proofs and sources were checked and which pages were inspected in the final build. [Book-writing guide](book-writing.md)
+
 The manuscript is the only source of problem statements. The three `BookProblem` arguments are a stable ID, catalogue title and original TeX statement. The parser follows static `\input{...}` and `\include{...}` commands from the root file, handling nested braces and comments. Input paths are relative to the root TeX directory. This lightweight parser does not support conditional alternative inputs, macro-computed paths, apparent inputs inside verbatim text or repeated inputs. Extend the parser and tests before using those forms; do not silently omit problems.
 
 | Status | Meaning | Replaces the original question? |
