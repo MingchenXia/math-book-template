@@ -5,7 +5,7 @@
   "root_tex": "book/main.tex",
   "bibliography": "references/references.bib",
   "bibliography_backend": "bibtex",
-  "engine": "pdflatex",
+  "engine": "xelatex",
   "main_branch": "main",
   "baseline_solutions": []
 }

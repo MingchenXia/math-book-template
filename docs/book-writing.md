@@ -3,9 +3,13 @@
 Use the plan's intended reader and scope to decide what to explain,
 prove or import. Use the blueprint to check the order in which the
 reader meets definitions and results. Keep decisions about this
-particular book, including prerequisites, citation placement and
-typography, in the project files. [Plan](../PLAN.md) ·
+particular book, including prerequisites and citation placement,
+in the project files. [Plan](../PLAN.md) ·
 [Blueprint](../BLUEPRINT.md)
+
+Use SGPT's layout and color theme. Follow its title, part and chapter
+formatting, section-based theorem numbering, hyperlink colors and
+index style throughout the book. [SGPT layout and colors](../book/style/README.md)
 
 ## Give the reader a route through the mathematics
 

@@ -1,6 +1,6 @@
 # Revising a completed book
 
-This procedure follows [SGPT's AGENTS.md](https://github.com/MingchenXia/SGPT/blob/main/AGENTS.md): mathematical revisions require reviewable branches and PRs, and author approval is separate from agent review. The generic template does not hard-code SGPT's personal website or manuscript style.
+Mathematical revisions require reviewable branches and PRs, with author approval separate from agent review. Preserve the SGPT layout and colors in the proposed PDF. [SGPT revision procedure](https://github.com/MingchenXia/SGPT/blob/main/AGENTS.md) · [Layout and colors](../book/style/README.md)
 
 1. **Record completion.** After a full current review, run `make finish`. It rebuilds the PDF, records source/PDF fingerprints and the resolved-problem baseline, creates the revision queue and sets phase to revision. Update STATUS and CHANGELOG, then commit the baseline to main. This starts the completed-book revision procedure; it does not establish that every problem is solved.
 2. **Start a proposal.** Preserve existing changes and synchronize main with `git pull --ff-only`. Run `python3 scripts/bookflow.py revision-start fix-estimate`. It requires a clean working tree on main and creates `revision/fix-estimate`, without copying uncommitted changes or forcibly resetting branches.

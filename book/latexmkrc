@@ -1,3 +1,4 @@
-$pdf_mode = 1;
-$pdflatex = 'pdflatex -interaction=nonstopmode -halt-on-error -file-line-error %O %S';
+$pdf_mode = 5;
 $bibtex_use = 2;
+$ENV{'INDEXSTYLE'} = ($ENV{'TEXINPUTS'} // '') . ':' . ($ENV{'INDEXSTYLE'} // '');
+$makeindex = 'makeindex -r -s svind.ist %O -o %D %S';

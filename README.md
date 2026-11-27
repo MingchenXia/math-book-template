@@ -25,6 +25,8 @@ bash start.sh
 
 Set the title and author in `bookflow.json`, define the readers and scope in `PLAN.md`, and replace the examples in `book/chapters/`. The PDF is `build/pdf/main.pdf`. The two demonstration questions are elementary exercises, not claims of open problems in the literature.
 
+Use the SGPT layout and color theme when adapting the starter book. The template includes its SVMono layout, New TX text and mathematics, colored hyperlinks and index style. [SGPT layout and colors](book/style/README.md)
+
 For dedicated CLI agents locally or in Codespaces, sign in to your own Codex account. The hosted workflow is described in the [cloud guide](docs/codex-cloud.md).
 
 ```sh
@@ -33,7 +35,7 @@ make edit       # Write/edit the current chapter and address review findings
 make review     # Independent read-only review: mathematics, prose, sources, layout and a second pass
 ```
 
-For a long book, review individual units with `python3 scripts/bookflow.py agent review --unit book/chapters/01-foundations.tex --pages 4`. Pages are physical PDF page numbers and must cover the assigned unit. Review the root document and preamble for global structure, bibliography and index settings as well. Before completion, every active input must have a current approved report for the same book fingerprint. Sampling does not replace a final review.
+For a long book, review individual units with `python3 scripts/bookflow.py agent review --unit book/chapters/01-foundations.tex --pages 9`. Pages are physical PDF page numbers and must cover the assigned unit. Review the root document and preamble for global structure, bibliography and index settings as well. Before completion, every active input must have a current approved report for the same book fingerprint. Sampling does not replace a final review.
 
 See [environment details](docs/environment.md) for tools and authentication. This template does not require private skills, reference libraries or validators from the author's computer.
 
