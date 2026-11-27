@@ -39,6 +39,8 @@ See [environment details](docs/environment.md) for tools and authentication. Thi
 
 ## Writing the book
 
+Use the book-writing guide when planning chapters, rewriting proofs, checking source credit and reviewing the compiled PDF. The editor and reviewers use the same guide. [Book-writing guide](docs/book-writing.md)
+
 ```text
 book/chapters/             Chapters and preface
 research/open-problems.*    Automatically generated problem catalogue
