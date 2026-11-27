@@ -2,6 +2,20 @@
 
 Record substantive updates here with the author's date, actual changed passages, and checks actually performed. Preserve old entries. Do not describe reviewed-but-unchanged text as a correction.
 
+## 2026-11-27 — SGPT layout and color theme
+
+Set SGPT's layout and colors as the template standard. The starter book
+uses XeLaTeX, the supplied SVMono class and MakeIndex style, New TX text
+and mathematics, section-based result numbering, and SGPT's title,
+part, chapter and contents settings. Catalogue questions use a numbered
+SVMono statement with their existing reference labels.
+
+All 45 workflow tests and local cloud setup verification passed. The
+starter PDF compiled to 13 physical pages. Visual comparison checked
+the title, part, chapter and index layout against SGPT, and a temporary
+bibliography example verified the internal link, citation and URL colors
+in the PDF.
+
 ## 2026-11-27 — Reusable book-writing guidance
 
 Added a shared guide for reader-oriented openings, notation and assumptions,

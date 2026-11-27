@@ -1,19 +1,28 @@
-\documentclass[11pt,oneside]{book}
+\documentclass[envcountsect]{svmono}
 \input{generated/metadata}
 \input{preamble}
 \input{generated/status}
 \begin{document}
-\frontmatter
 \hypersetup{pageanchor=false}
+\pagenumbering{Alph}
+\date{Updated on \today.}
 \maketitle
-\clearpage
+\frontmatter
 \hypersetup{pageanchor=true}
-\tableofcontents
 \input{chapters/preface}
+\tableofcontents
 \mainmatter
+\begin{partbacktext}
+\part{Compactness and continuous functions}
+\noindent
+Compactness reduces an open cover to a finite one. The first
+chapter shows that continuous images preserve this property.
+The second chapter asks what the property implies for real-valued
+functions.
+\end{partbacktext}
 \input{chapters/01-foundations}
 \input{chapters/02-questions}
 \backmatter
-\printbibliography
 \printindex
+\printbibliography[heading=bibintoc]
 \end{document}

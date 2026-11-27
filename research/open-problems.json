@@ -5,11 +5,11 @@
       "title": "Boundedness of a continuous function",
       "statement_tex": "Is every continuous function $f\\colon X\\to\\mathbb{R}$ bounded?",
       "source": "book/chapters/02-questions.tex",
-      "line": 4,
+      "line": 7,
       "status": "candidate",
       "integrated": false,
       "solution": "research/solutions/OP-001/solution.tex",
-      "source_sha256": "934c09df3254cab09007753ac30460e0c0f93f03e764251ae56b3e8197dd0d72",
+      "source_sha256": "25e455c938486e02a6d5b278198420d1d6dd775c8a9cb2b9296f2aab8dfe8e68",
       "scope": "full"
     },
     {
@@ -17,7 +17,7 @@
       "title": "Existence of extrema",
       "statement_tex": "If $X$ is nonempty, does every continuous function $f\\colon X\\to\\mathbb{R}$ attain its maximum and minimum?",
       "source": "book/chapters/02-questions.tex",
-      "line": 5,
+      "line": 8,
       "status": "open",
       "integrated": false
     }

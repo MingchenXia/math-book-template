@@ -6,8 +6,11 @@ latexmk
 biber
 poppler-utils
 texlive-latex-extra
+texlive-plain-generic
 texlive-bibtex-extra
 texlive-fonts-recommended
+texlive-fonts-extra
+tex-gyre
 texlive-science
 texlive-xetex
 texlive-luatex

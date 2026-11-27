@@ -42,7 +42,7 @@ For the book or a bounded chapter:
 
 ```sh
 python3 scripts/bookflow.py review-prepare review
-python3 scripts/bookflow.py review-prepare review --unit book/chapters/01-foundations.tex --pages 4
+python3 scripts/bookflow.py review-prepare review --unit book/chapters/01-foundations.tex --pages 9
 ```
 
 The command prints paths to `build/review-packets/<fingerprint>/assignment.json` and `prompt.md`. Book review first compiles and renders PDF pages. Give the prompt to an **independent, read-only reviewer**. If the cloud task supports subagents, delegate to a fresh read-only reviewer. Otherwise use a separate review task on the same branch and version, regenerating its assignment. The writer cannot fill in its own approved report. Reference full texts needed for review must also be available in the review environment.

@@ -14,7 +14,7 @@ if command -v "$backend" >/dev/null 2>&1 && ! "$backend" --version >/dev/null 2>
   echo "Bibliography backend cannot execute: $backend" >&2
   missing=1
 fi
-for package in biblatex.sty cleveref.sty lmodern.sty; do
+for package in biblatex.sty cleveref.sty newtxtext.sty newtxmath.sty binhex.tex; do
   if ! command -v kpsewhich >/dev/null 2>&1 || ! kpsewhich "$package" >/dev/null 2>&1; then
     echo "Missing TeX package: $package" >&2
     missing=1
